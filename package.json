@@ -27,9 +27,9 @@
     "express": "^4.13.0",
     "morgan": "^1.6.0",
     "node-cache": "^4.2.0",
-    "ptt": "^1.0.3",
+    "ptt": "https://github.com/Boommoon/ptt.git",
     "request": "^2.58.0",
-    "rss": "^1.1.1"
+    "rss": "^1.2.2"
   },
   "devDependencies": {
     "eslint": "^5.16.0",
