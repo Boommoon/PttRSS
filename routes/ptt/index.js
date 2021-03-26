@@ -31,7 +31,7 @@ function generateRSS(data, fetchContent) {
   const feed = new RSS({
     title: data.board,
     description: `PTT: ${data.board}`,
-    link: 'https://www.ptt.cc',
+    feed_url: `https://www.example.com/${data.board}.xml`,
     site_url: data.siteUrl,
     generator: 'PttRSS',
     pubDate: new Date(),
