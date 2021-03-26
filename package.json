@@ -1,6 +1,6 @@
 {
   "name": "PttRSS",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "Self-hosted Ptt RSS service",
   "main": "server.js",
   "scripts": {
@@ -22,18 +22,18 @@
   },
   "homepage": "https://github.com/imZack/PttRSS#readme",
   "dependencies": {
-    "bluebird": "^3.1.1",
-    "debug": "^4.1.1",
+    "bluebird": "^3.7.2",
+    "debug": "^4.3.1",
     "express": "^4.13.0",
-    "morgan": "^1.6.0",
-    "node-cache": "^4.2.0",
-    "ptt": "https://github.com/Boommoon/ptt.git",
-    "request": "^2.58.0",
-    "rss": "^1.2.2"
+    "feed": "^4.2.2",
+    "morgan": "^1.10.0",
+    "node-cache": "^4.2.1",
+    "ptt": "git+https://github.com/Boommoon/ptt.git",
+    "request": "^2.88.2"
   },
   "devDependencies": {
     "eslint": "^5.16.0",
-    "eslint-config-airbnb-base": "^13.1.0",
-    "eslint-plugin-import": "^2.17.3"
+    "eslint-config-airbnb-base": "^13.2.0",
+    "eslint-plugin-import": "^2.22.1"
   }
 }
