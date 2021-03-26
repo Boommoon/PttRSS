@@ -2,7 +2,7 @@ const debug = require('debug')('rss:ptt:index');
 const express = require('express');
 const NodeCache = require('node-cache');
 const Promise = require('bluebird');
-const RSS = require('rss');
+const Feed = require('feed').Feed;
 const { getArticlesFromLink, getArticleFromLink } = require('ptt');
 
 const router = express.Router();
@@ -28,13 +28,15 @@ function filterArticles(articles, keywords, exclude = false) {
 function generateRSS(data, fetchContent) {
   fetchContent = (fetchContent === true);
   let { articles } = data;
-  const feed = new RSS({
+  const feed = new Feed({
     title: data.board,
     description: `PTT: ${data.board}`,
-    feed_url: `https://www.example.com/${data.board}.xml`,
-    site_url: data.siteUrl,
-    generator: 'PttRSS',
-    pubDate: new Date(),
+    link: data.siteUrl,
+    language: "zh-TW",
+    generator: "PttRSS",
+    feedLinks:{
+      rss: `https://www.example.com/${data.board}.xml`
+    }
   });
   const titleKeywords = data.titleKeywords;
   const exTitleKeywords = data.exTitleKeywords;
@@ -55,26 +57,26 @@ function generateRSS(data, fetchContent) {
   if (fetchContent === false) {
     return new Promise((resolve) => {
       articles.forEach((articleMeta) => {
-        feed.item(articleMeta);
+        feed.addItem(articleMeta);
       });
       resolve(feed);
     });
   }
 
   return Promise.map(articles, (articleMeta) => {
-    const article = articleCache.get(articleMeta.url);
+    const article = articleCache.get(articleMeta.link);
     if (article) {
       debug('cached article: %s', article.title);
-      feed.item(article);
+      feed.addItem(article);
       return;
     }
 
-    getArticleFromLink(articleMeta.url)
+    getArticleFromLink(articleMeta.link)
       .then((_article) => {
         const articleWithMeta = Object.assign(articleMeta, _article);
-        feed.item(articleWithMeta);
-        debug('set cache article: %s', articleWithMeta.title, articleWithMeta.url);
-        articleCache.set(articleWithMeta.url, articleWithMeta);
+        feed.addItem(articleWithMeta);
+        debug('set cache article: %s', articleWithMeta.title, articleWithMeta.link);
+        articleCache.set(articleWithMeta.link, articleWithMeta);
       })
       .delay(100);
   }, { concurrency: 3 }).then(() => Promise.resolve(feed));
@@ -114,7 +116,7 @@ router
         .then((feed) => {
           debug('cached board: %s', board, cachedKey);
           res.set('Content-Type', 'text/xml');
-          return res.send(feed.xml());
+          return res.send(feed.rss2());
         })
         .catch(err => next(err));
     }
@@ -156,7 +158,7 @@ router
       .then(_articles => response(_articles))
       .then((feed) => {
         res.set('Content-Type', 'text/xml');
-        res.send(feed.xml());
+        res.send(feed.rss2());
       })
       .catch(err => next(err));
   });
