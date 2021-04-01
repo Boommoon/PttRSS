@@ -21,8 +21,25 @@ function matchTitle(article, keywords) {
   return false;
 }
 
-function filterArticles(articles, keywords, exclude = false) {
-  return articles.filter(article => exclude ^ matchTitle(article, keywords));
+function matchAuthor(article, keywords) {
+  for (let index = 0; index < keywords.length; index += 1) {
+    if (article.author[0].name.toLowerCase().indexOf(keywords[index].toLowerCase()) !== -1) {
+      debug('author: %s matched keyword: %s', article.author, keywords[index]);
+      return true;
+    }
+  }
+
+  debug('author: %s not matched any keywords: %s', article.author, keywords);
+  return false;
+}
+
+function filterArticles(articles, keywords, isauthor = false, exclude = false) {
+  if (isauthor){
+    return articles.filter(article => exclude ^ matchAuthor(article, keywords));
+  }
+  else {
+    return articles.filter(article => exclude ^ matchTitle(article, keywords));
+  }
 }
 
 function generateRSS(data, fetchContent) {
@@ -40,6 +57,7 @@ function generateRSS(data, fetchContent) {
   });
   const titleKeywords = data.titleKeywords;
   const exTitleKeywords = data.exTitleKeywords;
+  const exAuthorKeywords = data.exAuthorKeywords;
 
   // filter by title keywords
   if (titleKeywords && titleKeywords.length > 0) {
@@ -48,7 +66,12 @@ function generateRSS(data, fetchContent) {
 
   if (exTitleKeywords && exTitleKeywords.length > 0) {
     debug(exTitleKeywords);
-    articles = filterArticles(articles, exTitleKeywords, true);
+    articles = filterArticles(articles, exTitleKeywords, false, true);
+  }
+
+  if (exAuthorKeywords && exAuthorKeywords.length > 0) {
+    debug(exAuthorKeywords);
+    articles = filterArticles(articles, exAuthorKeywords, true, true);
   }
 
   // filter by push counts
@@ -102,6 +125,11 @@ router
       exTitleKeywords = [exTitleKeywords];
     }
 
+    let exAuthorKeywords = req.query.exauthor || [];
+    if (!Array.isArray(exAuthorKeywords)) {
+      exAuthorKeywords = [exAuthorKeywords];
+    }
+
     // Get from cache first
     const obj = cache.get(cachedKey);
     if (obj) {
@@ -111,6 +139,7 @@ router
         articles: obj.articles,
         titleKeywords,
         exTitleKeywords,
+        exAuthorKeywords,
         push,
       }, fetchContent)
         .then((feed) => {
@@ -134,6 +163,7 @@ router
         articles,
         titleKeywords,
         exTitleKeywords,
+        exAuthorKeywords,
         push,
       }, fetchContent);
     };
